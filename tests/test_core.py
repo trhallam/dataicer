@@ -1,6 +1,4 @@
 import pytest
-import pathlib
-from collections import OrderedDict
 
 import numpy as np
 

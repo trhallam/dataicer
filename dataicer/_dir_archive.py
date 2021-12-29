@@ -1,8 +1,6 @@
 from typing import Literal
 import shutil
 
-import jsonpickle
-
 from ._errors import DataIceExists
 from ._base_archive import BaseArchiveHandler
 from ._utils import PathType

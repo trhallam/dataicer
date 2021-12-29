@@ -81,8 +81,6 @@ class PandasDataFrameHandler(BaseHandler, BaseFileHandler):
                 df[key] = df[key].astype(dtype=dtype)
 
         elif mode == "h5":
-            print(self._ah.path)
-            print(self._ah.path / data["file_uuid"])
             df = pd.read_hdf(self._ah.path / data["file_uuid"])
         return df
 

@@ -1,10 +1,6 @@
-from base64 import decode
-from _pytest.mark import param
 import pytest
 import jsonpickle as jp
-import pandas as pd
 
-from dataicer import DirectoryHandler
 from dataicer.plugins.pandas import register_handlers
 
 

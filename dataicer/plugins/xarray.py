@@ -4,7 +4,6 @@ Instead of saving pandas DataFrames to json they are saved to either CSV or HDF 
 """
 
 from typing import Literal, Type
-import jsonpickle as jp
 from jsonpickle.handlers import BaseHandler, register, unregister
 
 import xarray as xr

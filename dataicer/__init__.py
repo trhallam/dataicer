@@ -1,4 +1,4 @@
-from typing import Sequence, Type
+from typing import Type
 
 from dataicer.plugins.file import BaseFileHandler
 from ._core import ice, deice, list_handlers

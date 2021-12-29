@@ -2,16 +2,12 @@
 """
 
 # pylint: disable=protected-access
-from abc import abstractmethod
-from typing import Iterable, Sequence, Union, Type, Any, ClassVar
+from typing import Union, Any
 
 import datetime
-from inspect import isclass
-from re import compile as recompile
 from pathlib import Path
 import jsonpickle as jp
 
-from ._errors import UnknownTypeError, ImportModuleError, DataIceExists
 from ._base_archive import BaseArchiveHandler
 from ._dir_archive import DirectoryHandler
 from ._pip import get_pip_freeze
