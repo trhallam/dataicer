@@ -73,7 +73,6 @@ def deice(file_path: PathType, classes=None) -> dict:
     restored = dict()
 
     for name, var in archive_handler.iter_json():
-        print(name)
         restored[name] = jp.decode(var, keys=True, classes=classes)
 
     return restored

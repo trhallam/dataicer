@@ -2,8 +2,12 @@ import pytest
 import pathlib
 from collections import OrderedDict
 
+import numpy as np
+
 from dataicer import ice, list_handlers, deice
 from dataicer.plugins import numpy as dinp
+from dataicer.plugins import pandas as dipd
+from dataicer.plugins import xarray as dixr
 
 
 @pytest.mark.parametrize(
@@ -18,6 +22,36 @@ def test_ice_baseobjects(directory_handler, baseobj):
 def test_ice_numpy(directory_handler, numpy_data, mode):
     dinp.register_handlers(directory_handler, mode=mode)
     ice(directory_handler, npar=numpy_data)
+
+    di = deice(directory_handler.path)
+    np.testing.assert_array_equal(di["npar"]["np_data"], numpy_data["np_data"])
+
+
+@pytest.mark.parametrize("mode", ["csv", "h5"])
+def test_ice_pandas(directory_handler, pandas_df, mode):
+    dipd.register_handlers(directory_handler, mode=mode)
+    ice(directory_handler, df=pandas_df)
+
+    di = deice(directory_handler.path)
+    assert pandas_df["df1"].equals(di["df"]["df1"])
+
+
+@pytest.mark.parametrize("mode", ["nc"])
+def test_ice_xarray_dataset(directory_handler, xarray_dataset, mode):
+    dixr.register_handlers(directory_handler, mode=mode)
+    ice(directory_handler, ds=xarray_dataset)
+
+    di = deice(directory_handler.path)
+    assert xarray_dataset["ds1"].equals(di["ds"]["ds1"])
+
+
+@pytest.mark.parametrize("mode", ["nc"])
+def test_ice_xarray_dataarray(directory_handler, xarray_dataarray, mode):
+    dixr.register_handlers(directory_handler, mode=mode)
+    ice(directory_handler, da=xarray_dataarray)
+
+    di = deice(directory_handler.path)
+    assert xarray_dataarray["da1"].equals(di["da"]["da1"])
 
 
 def test_class_of_baseobjects(directory_handler, test_class):
