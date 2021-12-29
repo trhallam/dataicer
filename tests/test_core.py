@@ -1,15 +1,42 @@
 import pytest
 import pathlib
+from collections import OrderedDict
 
-from dataicer import ice
-from dataicer._core import BASE_OBJECTS
+from dataicer import ice, list_handlers, deice
+from dataicer.plugins import numpy as dinp
+
 
 @pytest.mark.parametrize(
-    "baseobj", BASE_OBJECTS
+    "baseobj", [int, str, complex, float], ids=["int", "str", "complex", "float"]
 )
-def test_ice_baseobjects(tmpdir, baseobj):
+def test_ice_baseobjects(directory_handler, baseobj):
     test_obj = baseobj(10)
-    ice(tmpdir/"fakepath", a=test_obj, archive=False)
+    ice(directory_handler, a=test_obj)
+
+
+@pytest.mark.parametrize("mode", ["txt", "npy", "npz"])
+def test_ice_numpy(directory_handler, numpy_data, mode):
+    dinp.register_handlers(directory_handler, mode=mode)
+    ice(directory_handler, npar=numpy_data)
+
+
+def test_class_of_baseobjects(directory_handler, test_class):
+
+    tc = test_class()
+    ice(directory_handler, tc=tc)
+    di = deice(directory_handler.path, classes=test_class)
+
+    assert di["tc"] == tc
+
+
+def test_list_handlers():
+    handlers = list_handlers()
+    assert isinstance(handlers, dict)
+    assert "base" in handlers
+    assert isinstance(handlers["base"], dict)
+    assert "extra" in handlers
+    assert isinstance(handlers["extra"], dict)
+
 
 # @pytest.mark.parametrize(
 #     "comp", ["gz", "bz2", "xz"]

@@ -35,7 +35,6 @@ class NumpyBaseHandler(BaseHandler, BaseFileHandler):
     def __init__(self, archive_handler, mode: Literal["txt", "npy", "npz"] = "txt"):
         BaseFileHandler.__init__(self, archive_handler)
         self._mode = mode
-        self.get_file_id()
 
     def flatten_dtype(self, dtype, data):
         if hasattr(dtype, "tostring"):
@@ -54,7 +53,7 @@ class NumpyBaseHandler(BaseHandler, BaseFileHandler):
         return np.dtype(dtype)
 
     def get_file_id(self):
-        self._filename = self.get_uuid() + f".{self._mode}"
+        return self.get_uuid() + f".{self._mode}"
 
 
 class NumpyNDArrayHandler(NumpyBaseHandler):
@@ -71,7 +70,7 @@ class NumpyNDArrayHandler(NumpyBaseHandler):
     def flatten(self, obj, data):
         self.flatten_dtype(obj.dtype.newbyteorder("N"), data)
         self.flatten_flags(obj, data)
-        data["file_uuid"] = self._filename
+        data["file_uuid"] = self.get_file_id()
         data["shape"] = obj.shape
         data["mode"] = self._mode
 
