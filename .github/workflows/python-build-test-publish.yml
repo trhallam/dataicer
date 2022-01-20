@@ -29,6 +29,7 @@ jobs:
         fetch-depth: 0
 
     - name: Set up Python
+      uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python }}
 
@@ -37,12 +38,12 @@ jobs:
         python -m pip install --upgrade pip
         pip install build
 
-    # - name: Run tests
-    #   run: |
-    #     pytest -v
+    - name: Run tests
+      run: |
+        pytest -v
 
-    # - name: Build wheels
-    #   run: pip wheel . -w dist --no-deps
+    - name: Build wheels
+      run: pip wheel . -w dist --no-deps
 
   # test-publish:
   #   name: Publish to test.PyPI
