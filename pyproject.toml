@@ -6,3 +6,4 @@ requires = ["setuptools", "wheel", "setuptools_scm>=6.2"]
 
 [tool.setuptools_scm]
 write_to = "dataicer/_version.py"
+local_scheme = "no-local-version"
