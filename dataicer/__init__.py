@@ -1,6 +1,6 @@
 from typing import Type
 
-from dataicer.plugins.file import BaseFileHandler
+from .plugins.file import BaseFileHandler
 from ._core import ice, deice, list_handlers
 from ._base_archive import BaseArchiveHandler
 from ._dir_archive import DirectoryHandler
