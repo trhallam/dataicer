@@ -65,10 +65,6 @@ jobs:
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      
     - name: Publish package
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
