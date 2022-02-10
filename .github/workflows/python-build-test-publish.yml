@@ -71,13 +71,13 @@ jobs:
 
     steps:
     - name: passed?
-      if: jobs.build_test.status == 'success'
+      if: needs.build_test.result == 'success'
       run: |
         echo "BADGE_COLOUR=green" >> $GITHUB_ENV
         echo "BADGE_MSG=pass" >> $GITHUB_ENV
 
     - name: failed?
-      if: jobs.build_test.status() == 'failure'
+      if: needs.build_test.result == 'failure'
       run: |
         echo "BADGE_COLOUR=RED" >> $GITHUB_ENV
         echo "BADGE_MSG=fail" >> $GITHUB_ENV
