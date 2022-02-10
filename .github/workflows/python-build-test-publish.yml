@@ -16,7 +16,7 @@ env:
 jobs:
 
   build-test:
-    name: Build and test ${{ env.PACKAGE }}
+    name: Build and test
     strategy:
       fail-fast: false
       matrix:
@@ -72,13 +72,13 @@ jobs:
 
     steps:
     - name: passed?
-      if: needs.build-test.status == 'success'
+      if: ${{ needs.build-test.status == 'success' }}
       run: |
         echo "BADGE_COLOUR=green" >> $GITHUB_ENV
         echo "BADGE_MSG=pass" >> $GITHUB_ENV
 
     - name: failed?
-      if: needs.build-test.status == 'failure'
+      if: ${{ needs.build-test.status == 'failure' }}
       run: |
         echo "BADGE_COLOUR=RED" >> $GITHUB_ENV
         echo "BADGE_MSG=fail" >> $GITHUB_ENV
