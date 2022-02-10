@@ -64,21 +64,15 @@ jobs:
     needs: [build-test]
     runs-on: ubuntu-latest
 
-    env:
-      BADGE_FILE = "${{ env.PACKAGE }}_test.json"
-      LABEL = "Tests"
-      LOGO = "Python"
-      LOGO_COLOUR = "white"
-
     steps:
     - name: passed?
-      if: ${{ needs.build-test.status == 'success' }}
+      if: needs.build-test.status == 'success'
       run: |
         echo "BADGE_COLOUR=green" >> $GITHUB_ENV
         echo "BADGE_MSG=pass" >> $GITHUB_ENV
 
     - name: failed?
-      if: ${{ needs.build-test.status == 'failure' }}
+      if: needs.build-test.status == 'failure'
       run: |
         echo "BADGE_COLOUR=RED" >> $GITHUB_ENV
         echo "BADGE_MSG=fail" >> $GITHUB_ENV
