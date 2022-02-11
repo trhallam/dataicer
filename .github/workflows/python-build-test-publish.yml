@@ -65,7 +65,7 @@ jobs:
 
   test_badge:
     name: create test badges
-    if: ${{ always() }}
+    if: always() && github.ref_name == 'main'
     needs: [build-test]
     runs-on: ubuntu-latest
 
@@ -87,7 +87,7 @@ jobs:
       uses: schneegans/dynamic-badges-action@v1.1.0
       with:
         auth: ${{ secrets.GIST_TOKEN }}
-        gistID: 3383896c25bd99987cb78b098d18cf32
+        gistID: 0da415ee1bf30b0fc37a2fc4ddafbdee
         filename: ${{ env.PACKAGE }}_test.json
         label: Tests
         namedLogo: Python
@@ -98,6 +98,7 @@ jobs:
 
   publish:
     name: Publish to test.PyPi and PyPi
+    if: github.ref_name == 'main'
     runs-on: ubuntu-latest
     needs: [build-test]
 

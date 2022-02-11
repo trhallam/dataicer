@@ -1,6 +1,20 @@
 # dataicer - [![latest-version](https://img.shields.io/pypi/v/dataicer?color=006dad&label=pypi_version&logo=Python&logoColor=white)](https://pypi.org/project/dataicer)
 
-![Build-Publish](https://github.com/trhallam/dataicer/actions/workflows/python-build-test-publish.yml/badge.svg) [![Code Style](https://img.shields.io/badge/code_style-black-000000.svg)](https://github.com/psf/black) [![Licence](https://img.shields.io/badge/license-GPLv3-brightgreen)](https://github.com/trhallam/dataicer/blob/main/LICENSE)
+<p align="left">
+    <a href="https://github.com/trhallam/digirock/actions" 
+       alt="Python Tests">
+        <img src="https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/trhallam/0da415ee1bf30b0fc37a2fc4ddafbdee/raw/dataicer_test.json" />
+    </a>
+    <a href="https://github.com/psf/black" 
+       alt="black">
+        <img src="https://img.shields.io/badge/code_style-black-000000.svg" />
+    </a>
+    </a>
+        <a href="https://github.com/trhallam/digirock/blob/main/LICENSE" 
+       alt="License">
+        <img src="https://img.shields.io/badge/license-MIT-brightgreen" />
+    </a>
+</p>
 
 Ice (save) your data and high level objects for use later.
 
