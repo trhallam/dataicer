@@ -52,7 +52,7 @@ jobs:
       - name: Run tests
         # additional configuration in pyproject.toml
         run: |
-          pytest -v
+          pytest -v | tee ./pytest-coverage.txt
 
       - name: Pytest coverage comment
         uses: MishaKav/pytest-coverage-comment@main
