@@ -23,8 +23,8 @@ jobs:
         python: ["3.8", "3.9"]
 
     outputs:
-      output1: ${{ steps.coverage.outputs.coverage }}
-      output2: ${{ steps.coverage.outputs.color }}
+      coverage: ${{ steps.coverage.outputs.coverage }}
+      coverage_color: ${{ steps.coverage.outputs.color }}
 
     runs-on: ${{ matrix.os }}
 
@@ -65,14 +65,12 @@ jobs:
           junitxml-path: ./pytest.xml
           title: Coverage Report ${{ matrix.os }} Python ${{ matrix.python }}
 
-      - name: Pytest coverage coverage output
+      - name: Pytest coverage output
         id: coverage
         if: ${{ matrix.os }} == 'ubuntu-latest' && ${{ matrix.python }} == '3.9'
-        run: echo "::set-output name=coverage::${{ steps.coverageComment.outputs.coverage }}"
-      - name: Pytest coverage color output
-        id: color
-        if: ${{ matrix.os }} == 'ubuntu-latest' && ${{ matrix.python }} == '3.9'
-        run: echo "::set-output name=color::${{ steps.coverageComment.outputs.color }}"
+        run: |
+          echo "::set-output name=coverage::${{ steps.coverageComment.outputs.coverage }}"
+          echo "::set-output name=color::${{ steps.coverageComment.outputs.color }}"
 
       - name: Build wheels
         run: pip wheel . -w dist --no-deps
@@ -123,7 +121,7 @@ jobs:
           filename: ${{ env.PACKAGE }}_coverage.json
           label: Coverage Report
           message: ${{ needs.build-test.outputs.coverage }}
-          color: ${{ needs.build-test.outputs.color }}
+          color: ${{ needs.build-test.outputs.coverage_color }}
           namedLogo: python
 
   publish:
