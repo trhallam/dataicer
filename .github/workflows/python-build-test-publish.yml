@@ -14,54 +14,60 @@ env:
   PACKAGE: dataicer
 
 jobs:
-
   build-test:
     name: Build and test
     strategy:
       fail-fast: false
       matrix:
-        os: ['ubuntu-latest']
-        python: ['3.8']
-        
+        os: ["ubuntu-latest"]
+        python: ["3.8", "3.9"]
+
     runs-on: ${{ matrix.os }}
-    
+
     steps:
-    - uses: actions/checkout@v2
-      with:
-        # required for `git describe --tags` to work
-        fetch-depth: 0
+      - uses: actions/checkout@v2
+        with:
+          # required for `git describe --tags` to work
+          fetch-depth: 0
 
-    # required to use caching because it depends on requirements.txt
-    - name: create requirements
-      run: |
-        python -m pip install --upgrade pip
-        pip install pip_tools
-        pip-compile setup.cfg --extra test
+      # required to use caching because it depends on requirements.txt
+      - name: create requirements
+        run: |
+          python -m pip install --upgrade pip
+          pip install pip_tools
+          pip-compile setup.cfg --extra test
 
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: ${{ matrix.python }}
-        cache: 'pip'
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python }}
+          cache: "pip"
 
-    - name: Install package and deps
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        pip install .
+      - name: Install package and deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install .
 
-    - name: Run tests
-      run: |
-        pytest -v
+      - name: Run tests
+        # additional configuration in pyproject.toml
+        run: |
+          pytest -v
 
-    - name: Build wheels
-      run: pip wheel . -w dist --no-deps
+      - name: Pytest coverage comment
+        uses: MishaKav/pytest-coverage-comment@main
+        with:
+          pytest-coverage-path: ./pytest-coverage.txt
+          junitxml-path: ./pytest.xml
 
-    - name: Upload wheel as artifact
-      uses: actions/upload-artifact@v2
-      with:
-        name: ${{ matrix.os }} Python ${{ matrix.python }} wheel
-        path: dist/*
+      - name: Build wheels
+        run: pip wheel . -w dist --no-deps
+
+      - name: Upload wheel as artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ matrix.os }} Python ${{ matrix.python }} wheel
+          path: dist/*
 
   test_badge:
     name: create test badges
@@ -70,31 +76,30 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: passed?
-      if: needs.build-test.result == 'success'
-      run: |
-        echo "BADGE_COLOUR=green" >> $GITHUB_ENV
-        echo "BADGE_MSG=pass" >> $GITHUB_ENV
+      - name: passed?
+        if: needs.build-test.result == 'success'
+        run: |
+          echo "BADGE_COLOUR=green" >> $GITHUB_ENV
+          echo "BADGE_MSG=pass" >> $GITHUB_ENV
 
-    - name: failed?
-      if: needs.build-test.result == 'failure'
-      run: |
-        echo "BADGE_COLOUR=RED" >> $GITHUB_ENV
-        echo "BADGE_MSG=fail" >> $GITHUB_ENV
+      - name: failed?
+        if: needs.build-test.result == 'failure'
+        run: |
+          echo "BADGE_COLOUR=RED" >> $GITHUB_ENV
+          echo "BADGE_MSG=fail" >> $GITHUB_ENV
 
-    - name: create test badges
-      if: 
-      uses: schneegans/dynamic-badges-action@v1.1.0
-      with:
-        auth: ${{ secrets.GIST_TOKEN }}
-        gistID: 0da415ee1bf30b0fc37a2fc4ddafbdee
-        filename: ${{ env.PACKAGE }}_test.json
-        label: Tests
-        namedLogo: Python
-        logoColor: white
-        message: ${{ env.BADGE_MSG }}
-        color: ${{ env.BADGE_COLOUR }}
-
+      - name: create test badges
+        if:
+        uses: schneegans/dynamic-badges-action@v1.1.0
+        with:
+          auth: ${{ secrets.GIST_TOKEN }}
+          gistID: 0da415ee1bf30b0fc37a2fc4ddafbdee
+          filename: ${{ env.PACKAGE }}_test.json
+          label: Tests
+          namedLogo: Python
+          logoColor: white
+          message: ${{ env.BADGE_MSG }}
+          color: ${{ env.BADGE_COLOUR }}
 
   publish:
     name: Publish to test.PyPi and PyPi
@@ -103,28 +108,27 @@ jobs:
     needs: [build-test]
 
     steps:
-    - name: Get wheels
-      uses: actions/download-artifact@v2
-      with:
-        path: artifacts
+      - name: Get wheels
+        uses: actions/download-artifact@v2
+        with:
+          path: artifacts
 
-    - name: Move to dist/
-      run: |
-        mkdir dist
-        find artifacts -name "*.whl" -exec mv '{}' dist/ \;
+      - name: Move to dist/
+        run: |
+          mkdir dist
+          find artifacts -name "*.whl" -exec mv '{}' dist/ \;
 
-    - name: Publish package to test.PyPI
-      uses: pypa/gh-action-pypi-publish@release/v1
-      with:
-        user: __token__
-        password: ${{ secrets.TEST_PYPI_API_TOKEN }}
-        repository_url: https://test.pypi.org/legacy/
+      - name: Publish package to test.PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          user: __token__
+          password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+          repository_url: https://test.pypi.org/legacy/
 
-
-    - name: Publish package to PyPI
-      uses: pypa/gh-action-pypi-publish@release/v1
-      with:
-        user: __token__
-        password: ${{ secrets.PYPI_API_TOKEN }}
-      # If this is a tagged release
-      if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
+      - name: Publish package to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          user: __token__
+          password: ${{ secrets.PYPI_API_TOKEN }}
+        # If this is a tagged release
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')

@@ -5,5 +5,12 @@ name = "dataicer"
 requires = ["setuptools", "wheel", "setuptools_scm>=6.2"]
 
 [tool.setuptools_scm]
-write_to = "dataicer/_version.py"
+write_to = "src/dataicer/_version.py"
 local_scheme = "no-local-version"
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "--cov=dataicer --junitxml=pytest.xml --cov-report=term-missing:skip-covered"
+testpaths = [
+    "tests"
+]
