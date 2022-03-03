@@ -4,22 +4,17 @@ Instead of saving pandas DataFrames to json they are saved to either CSV or HDF 
 """
 
 from typing import Literal, Type
-from jsonpickle.handlers import BaseHandler, register, unregister
+from jsonpickle.handlers import BaseHandler
 
 import xarray as xr
 
 from .file import BaseFileHandler
 
-__all__ = ["register_handlers", "unregister_handlers"]
-
 
 class XarrayBaseHandler(BaseHandler, BaseFileHandler):
-    def __init__(self, archive_handler, mode: Literal["nc"] = "nc", write_kwargs=None):
+    def __init__(self, mode: Literal["nc"] = "nc", write_kwargs=None):
+        BaseFileHandler.__init__(self)
 
-        if mode == "nc" and archive_handler._archive_type != "directory":
-            raise ValueError("Cannot use hdf store on non-directory archives.")
-
-        BaseFileHandler.__init__(self, archive_handler)
         self._mode = mode
         self._write_kwargs = write_kwargs
 
@@ -102,15 +97,10 @@ class XarrayDatasetHandler(XarrayBaseHandler):
         return ds
 
 
-def register_handlers(
-    archive_handler: Type[BaseFileHandler], mode: Literal["nc"] = "nc"
-):
-    register(
-        xr.DataArray, XarrayDataArrayHandler(archive_handler, mode=mode), base=True
-    )
-    register(xr.Dataset, XarrayDatasetHandler(archive_handler, mode=mode), base=True)
-
-
-def unregister_handlers():
-    unregister(xr.Dataset)
-    unregister(xr.DataArray)
+def get_xarray_handlers(mode: Literal["nc"] = "nc") -> dict:
+    """Get a dictionary of xarray, handler pairs."""
+    type_handlers = {
+        xr.DataArray: XarrayDataArrayHandler(mode=mode),
+        xr.Dataset: XarrayDatasetHandler(mode=mode),
+    }
+    return type_handlers

@@ -1,6 +1,7 @@
 from typing import Literal
 import shutil
 
+
 from ._errors import DataIceExists
 from ._base_archive import BaseArchiveHandler
 from ._utils import PathType
@@ -22,13 +23,20 @@ class DirectoryHandler(BaseArchiveHandler):
 
     _archive_type = "directory"
 
-    def __init__(self, dir_path: PathType, mode: Literal["r", "w", "a"] = "r"):
+    def __init__(
+        self,
+        dir_path: PathType,
+        handlers: dict = None,
+        mode: Literal["r", "w", "a"] = "r",
+    ):
         """
 
         Args:
             dir_path
+            handlers: type and handler pairs, handlers are `jsonpickle` extensions.
+            mode: how to open the file.
         """
-        super().__init__(dir_path)
+        super().__init__(dir_path, handlers=handlers)
 
         if mode == "r" and not self.path.exists():
             raise FileNotFoundError
@@ -40,9 +48,10 @@ class DirectoryHandler(BaseArchiveHandler):
             self.path.mkdir()
 
     def open_file(self, file_name, mode="r"):
+        """Context manager for opening an individual file in the archive."""
         return FileHandler(self.path, file_name, mode=mode)
 
-    def save(self, **kwargs):
+    def save_json(self, **kwargs):
         """Save JSON strings to file with names from keyword arguments."""
         for arg, val in kwargs.items():
             with open(self.path / f"{arg}.json", "w") as open_file:
@@ -53,7 +62,7 @@ class DirectoryHandler(BaseArchiveHandler):
             return jf.read()
 
     def iter_json(self):
-        """"""
+        """Iterate over the JSON files of the archive."""
         for key in self.keys():
             contents = self._read_key(key)
             yield key, contents

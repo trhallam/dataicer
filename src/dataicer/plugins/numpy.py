@@ -5,22 +5,15 @@ We however use numpy save and load for txt/binary files.
 from __future__ import absolute_import
 import ast
 import sys
-from typing import Literal, Type
-import zlib
-import warnings
-import json
+from typing import Literal
 
 import numpy as np
 
-from jsonpickle.handlers import BaseHandler, register, unregister
-from jsonpickle.compat import numeric_types
+from jsonpickle.handlers import BaseHandler
 import jsonpickle.ext.numpy as jpxnp
 from jsonpickle import compat
 
 from .file import BaseFileHandler
-
-
-__all__ = ["register_handlers", "unregister_handlers"]
 
 native_byteorder = "<" if sys.byteorder == "little" else ">"
 
@@ -32,8 +25,8 @@ def get_byteorder(arr):
 
 
 class NumpyBaseHandler(BaseHandler, BaseFileHandler):
-    def __init__(self, archive_handler, mode: Literal["txt", "npy", "npz"] = "txt"):
-        BaseFileHandler.__init__(self, archive_handler)
+    def __init__(self, mode: Literal["txt", "npy", "npz"] = "txt"):
+        BaseFileHandler.__init__(self)
         self._mode = mode
 
     def flatten_dtype(self, dtype, data):
@@ -109,17 +102,21 @@ class NumpyNDArrayHandler(NumpyBaseHandler):
         return arr
 
 
-def register_handlers(
-    archive_handler: Type[BaseFileHandler], mode: Literal["txt", "npy", "npz"] = "txt"
-):
-    # json pickle register - register all normal functions for numpy
-    jpxnp.register_handlers()
-
-    # substitute handler for array type
-    unregister(np.ndarray)
-    register(np.ndarray, NumpyNDArrayHandler(archive_handler, mode=mode), base=True)
-
-
-def unregister_handlers():
-    # json pickle unregister - no new types added to registry
-    jpxnp.unregister_handlers()
+def get_numpy_handlers(
+    array_mode: Literal["txt", "npy", "npz", "json"] = "txt"
+) -> dict:
+    """Get a dictionary of numpy dtype, handler pairs."""
+    type_handlers = {
+        np.dtype: jpxnp.NumpyDTypeHandler,
+        np.generic: jpxnp.NumpyGenericHandler,
+        # Numpy 1.20 has custom dtypes that must be registered separately.
+        np.dtype(np.void).__class__: jpxnp.NumpyDTypeHandler,
+        np.dtype(np.float32).__class__: jpxnp.NumpyDTypeHandler,
+        np.dtype(np.int32).__class__: jpxnp.NumpyDTypeHandler,
+        np.dtype(np.datetime64).__class__: jpxnp.NumpyDTypeHandler,
+    }
+    if array_mode == "json":
+        type_handlers[np.ndarray] = jpxnp.NumpyNDArrayHandlerView()
+    else:
+        type_handlers[np.ndarray] = NumpyNDArrayHandler(mode=array_mode)
+    return type_handlers

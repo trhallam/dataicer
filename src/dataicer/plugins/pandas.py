@@ -5,26 +5,19 @@ Instead of saving pandas DataFrames to json they are saved to either CSV or HDF 
 
 from typing import Literal, Type
 import jsonpickle as jp
-from jsonpickle.handlers import BaseHandler, register, unregister
+from jsonpickle.handlers import BaseHandler
 import jsonpickle.ext.pandas as jpxpd
 
 import pandas as pd
 
 from .file import BaseFileHandler
-from .numpy import register_handlers as register_numpy_handlers
-
-__all__ = ["register_handlers", "unregister_handlers"]
+from .numpy import get_numpy_handlers
 
 
 class PandasDataFrameHandler(BaseHandler, BaseFileHandler):
-    def __init__(
-        self, archive_handler, mode: Literal["csv", "h5"] = "csv", write_kwargs=None
-    ):
+    def __init__(self, mode: Literal["csv", "h5"] = "csv", write_kwargs=None):
 
-        if mode == "h5" and archive_handler._archive_type != "directory":
-            raise ValueError("Cannot use hdf store on non-directory archives.")
-
-        BaseFileHandler.__init__(self, archive_handler)
+        BaseFileHandler.__init__(self)
         self._mode = mode
         self._write_kwargs = write_kwargs
 
@@ -85,21 +78,25 @@ class PandasDataFrameHandler(BaseHandler, BaseFileHandler):
         return df
 
 
-def register_handlers(
-    archive_handler: Type[BaseFileHandler], mode: Literal["csv", "h5"] = "csv"
-):
-    register_numpy_handlers(archive_handler, mode="txt")
-    register(
-        pd.DataFrame, PandasDataFrameHandler(archive_handler, mode=mode), base=True
+def get_pandas_handlers(
+    mode: Literal["csv", "h5"] = "csv",
+    array_mode: Literal["txt", "npy", "npz", "json"] = "txt",
+) -> dict:
+    """Get a dictionary of pandas/numpy dtype, handler pairs.
+
+    Pandas Series can be saved to numpy objects to avoid putting them in the JSON file.
+    """
+    type_handlers = get_numpy_handlers(array_mode=array_mode)
+    type_handlers.update(
+        {
+            pd.DataFrame: PandasDataFrameHandler(mode=mode),
+            pd.Series: jpxpd.PandasSeriesHandler,
+            pd.Index: jpxpd.PandasIndexHandler,
+            pd.PeriodIndex: jpxpd.PandasPeriodIndexHandler,
+            pd.MultiIndex: jpxpd.PandasMultiIndexHandler,
+            pd.Timestamp: jpxpd.PandasTimestampHandler,
+            pd.Period: jpxpd.PandasPeriodHandler,
+            pd.Interval: jpxpd.PandasIntervalHandler,
+        }
     )
-    register(pd.Series, jpxpd.PandasSeriesHandler, base=True)
-    register(pd.Index, jpxpd.PandasIndexHandler, base=True)
-    register(pd.PeriodIndex, jpxpd.PandasPeriodIndexHandler, base=True)
-    register(pd.MultiIndex, jpxpd.PandasMultiIndexHandler, base=True)
-    register(pd.Timestamp, jpxpd.PandasTimestampHandler, base=True)
-    register(pd.Period, jpxpd.PandasPeriodHandler, base=True)
-    register(pd.Interval, jpxpd.PandasIntervalHandler, base=True)
-
-
-def unregister_handlers():
-    jpxpd.unregister_handlers()
+    return type_handlers

@@ -1,10 +1,8 @@
 from typing import List
-
-try:
-    from pip._internal.operations import freeze
-except ImportError:  # pip < 10.0
-    from pip.operations import freeze
+import subprocess
 
 def get_pip_freeze() -> List[str]:
     """Return the freeze list from pip directly as a list"""
-    return list(freeze.freeze())
+    run = subprocess.Popen(["pip", "freeze"], stdout=subprocess.PIPE)
+    stdout = run.stdout.read().decode().strip().split("\n")
+    return stdout

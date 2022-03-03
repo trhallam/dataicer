@@ -1,20 +1,24 @@
 import pytest
 import jsonpickle as jp
 
-from dataicer.plugins.xarray import register_handlers
+from dataicer import DirectoryHandler
+from dataicer.plugins.xarray import get_xarray_handlers
 
 
 @pytest.mark.parametrize("mode", ["nc"])
-def test_dataset(directory_handler, xarray_dataset, mode):
-    register_handlers(directory_handler, mode=mode)
-    json = jp.encode(xarray_dataset)
-
-    assert xarray_dataset["ds1"].equals(jp.decode(json)["ds1"])
+def test_dataset(tmpdir, xarray_dataset, mode):
+    dh = DirectoryHandler(tmpdir, get_xarray_handlers(mode=mode), "w")
+    with dh as _:
+        json = jp.encode(xarray_dataset)
+        test = jp.decode(json)
+    assert xarray_dataset["ds1"].equals(test["ds1"])
 
 
 @pytest.mark.parametrize("mode", ["nc"])
-def test_dataarray(directory_handler, xarray_dataarray, mode):
-    register_handlers(directory_handler, mode=mode)
-    json = jp.encode(xarray_dataarray)
+def test_dataarray(tmpdir, xarray_dataarray, mode):
+    dh = DirectoryHandler(tmpdir, get_xarray_handlers(mode=mode), "w")
+    with dh as _:
+        json = jp.encode(xarray_dataarray)
+        test = jp.decode(json)
 
-    assert xarray_dataarray["da1"].equals(jp.decode(json)["da1"])
+    assert xarray_dataarray["da1"].equals(test["da1"])

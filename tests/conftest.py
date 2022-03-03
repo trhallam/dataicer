@@ -3,8 +3,6 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
-from dataicer import DirectoryHandler
-
 
 @pytest.fixture(scope="module", params=[1, 2, 3], ids=["1d", "2d", "3d"])
 def numpy_data(request):
@@ -54,13 +52,6 @@ def xarray_dataset():
         },
     )
     return {"ds1": ds}
-
-
-@pytest.fixture(scope="function")
-def directory_handler(tmpdir):
-    tmpdir.remove()
-    handler = DirectoryHandler(tmpdir, mode="w")
-    return handler
 
 
 @pytest.fixture()
