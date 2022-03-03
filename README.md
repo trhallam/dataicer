@@ -43,36 +43,40 @@ Installation using `pip` via the source directory.
 pip install .
 ```
 
+or install from PyPi
+
+```
+pip install digirock
+```
+
 ## Usage
 
 First, create a new `DirectoryHandler` class. This points at the archive folder
 you want to use.
 
-```
-from dataicer import ice, deice, DirectoryHandler, register_handlers
+If you have speical classes you need to pickle they need a special handler. Dataicer includes handlers for `numpy.ndarray`, `xarray.Dataarray` and `xarray.Dataset` and `pandas.DataFrame`. Handlers are unique to the `DirectoryHandler` instance.
 
-dh = DirectoryHandler("my_archive", mode="w")
 ```
+from dataicer import DirectoryHandler, get_numpy_handlers, get_pandas_handlers, get_xarray_handlers
 
-Then register the archive handler together with any special handlers you need.
-Currently, the extra supported data structures are `numpy.ndarray`, `xarray.Dataarray` and `xarray.Dataset` and `pandas.DataFrame`.
+handlers = get_pandas_handlers()
+handlers.update(get_xarray_handlers())
+
+dh = DirectoryHandler("my_archive", handlers, mode="w")
+```
 
 Numpy arrays can be saved in single column `"txt"`, `"npy"` binary, or `"npz"` compressed.
 Xarray structures can only be saved as `"nc"` netcdf.
 Pandas DataFrames can be saved as `"h5"` hdf5 or `"csv"` text files.
 
-```
-register_handlers(dh, numpy="txt", xarray="nc", pandas="h5")
-```
-
-Objects are then passed to the `ice` function as keyword arguments.
+Objects are then passed to the `ice` function of the `DirectoryHandler` as keyword arguments.
 
 ```
 import numpy as np
 import xarry as xr
 import pandas as pd
 
-ice(dh, nparr=np.zeros(10), df=pd.DataFrame(data={"a":[1, 2, 3]}), xarrds=xr.tutorial.scatter_example_dataset())
+dh.ice(nparr=np.zeros(10), df=pd.DataFrame(data={"a":[1, 2, 3]}), xarrds=xr.tutorial.scatter_example_dataset())
 ```
 
 `dataicer` will create the directory `my_archive` and place three files identified via a uuid
@@ -80,11 +84,10 @@ in the directory for each object. There is also a JSON file with the key name co
 the meta information for the object saved and a `meta.json` file which contains information
 about the system state at the time the archive was created.
 
-The `deice` command can be passed the path to an archive (it does not require a handler). And
-will reload all of the arguments into a dictionary.
+The `deice` command can be used to reload all of the arguments into a dictionary.
 
 ```
-state = deice("my_archive")
+state = dh.deice()
 state["nparr"]
 
     array([0., 0., 0., 0., 0., 0., 0., 0., 0., 0.])
