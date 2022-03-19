@@ -1,6 +1,7 @@
 from typing import Dict, Union, Sequence
 from pathlib import Path
 import jsonpickle as jp
+import json
 from ._utils import PathType
 from ._core import _get_json_meta
 
@@ -35,13 +36,31 @@ class BaseArchiveHandler:
         """returns a JSON string from reading a key in an archive"""
         raise NotImplementedError
 
+    def remove_key(self, key: str) -> None:
+        """remove a key and any associated files from an archive"""
+        raise NotImplementedError
+
+    def _key_get_uuid(self, key: str) -> Union[str, None]:
+        """Check if a key has a uuid and return it if True else None"""
+        key_json = self._read_key(key)
+        key_dict = json.loads(key_json)
+        if isinstance(key_dict, dict):
+            uuid = key_dict.get("file_uuid")
+        else:
+            uuid = None
+        return uuid
+
     def ice(self, meta: Union[dict, None] = None, **kwargs):
         meta = dict() if not meta else meta
         meta.update({"handlers": self._handlers})
         self.save_json(**{"meta": _get_json_meta(meta)})
 
+        current_keys = self.keys()
+
         with self as _:
             for arg, val in kwargs.items():
+                if arg in current_keys:
+                    self.remove_key(arg)
                 freeze = jp.encode(val)
                 self.save_json(**{arg: freeze})
 
@@ -70,16 +89,24 @@ class BaseArchiveHandler:
         """Get the list of objects from the archive."""
         raise NotImplementedError
 
-    def __enter__(self):
+    def open(self):
         for cls, handler in self._handlers.items():
             try:
                 handler.set_archive_handler(self)
             except AttributeError:
                 pass
             jp.register(cls, handler, base=True)
+
+    def __enter__(self):
+        self.open()
         return self
 
-    def __exit__(self, *args):
+    def close(self):
         for cls, _ in self._handlers.items():
             jp.unregister(cls)
-        return args
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.close()
+        pass
+        # if isinstance(, Exception):
+        #     raise args[0]

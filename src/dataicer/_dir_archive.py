@@ -1,6 +1,7 @@
 from typing import Literal
 import shutil
-
+import os
+import pathlib
 
 from ._errors import DataIceExists
 from ._base_archive import BaseArchiveHandler
@@ -32,13 +33,16 @@ class DirectoryHandler(BaseArchiveHandler):
         """
 
         Args:
-            dir_path
+            dir_path: The path of the directory, (always has a .ice suffix)
             handlers: type and handler pairs, handlers are `jsonpickle` extensions.
             mode: how to open the file.
         """
+        self._mode = mode
+        dir_path = pathlib.Path(dir_path).with_suffix(".ice")
+
         super().__init__(dir_path, handlers=handlers)
 
-        if mode == "r" and not self.path.exists():
+        if mode in ["r", "a"] and not self.path.exists():
             raise FileNotFoundError
 
         if mode == "w" and self.path.exists():
@@ -70,6 +74,18 @@ class DirectoryHandler(BaseArchiveHandler):
     def keys(self):
         """"""
         return tuple(json_file.stem for json_file in self.path.glob("*.json"))
+
+    def remove_key(self, key: str) -> None:
+        """Remove a key and associated files from an archive"""
+        if self._mode == "r":
+            raise ValueError("DirectoryArchive is read only")
+
+        assert key in self.keys()
+
+        uuid = self._key_get_uuid(key)
+        if uuid is not None:
+            os.remove(self.path / uuid)
+        os.remove(self.path / f"{key}.json")
 
     def __getitem__(self, item):
         """"""
