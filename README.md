@@ -57,7 +57,8 @@ you want to use.
 If you have special classes you need to pickle they need a special handler. Dataicer includes handlers for `numpy.ndarray`, `xarray.Dataarray` and `xarray.Dataset` and `pandas.DataFrame`. Handlers are unique to the `DirectoryHandler` instance.
 
 ```
-from dataicer import DirectoryHandler, get_numpy_handlers, get_pandas_handlers, get_xarray_handlers
+from dataicer import DirectoryHandler
+from dataicer.plugins import get_numpy_handlers, get_pandas_handlers, get_xarray_handlers
 
 handlers = get_pandas_handlers()
 handlers.update(get_xarray_handlers())
@@ -76,7 +77,22 @@ import numpy as np
 import xarry as xr
 import pandas as pd
 
-dh.ice(nparr=np.zeros(10), df=pd.DataFrame(data={"a":[1, 2, 3]}), xarrds=xr.tutorial.scatter_example_dataset())
+dh.ice(
+    nparr=np.zeros(10),
+    df=pd.DataFrame(data={"a":[1, 2, 3]}),
+    xarrds=xr.tutorial.scatter_example_dataset()
+)
+```
+
+Alternatively, the `DirectoryHandler` can be used within a context manager.
+
+```
+with DirectoryHandler("my_archive", handlers, mode="w") as dh:
+    dh.ice(
+        nparr=np.zeros(10),
+        df=pd.DataFrame(data={"a":[1, 2, 3]}),
+        xarrds=xr.tutorial.scatter_example_dataset()
+    )
 ```
 
 `dataicer` will create the directory `my_archive` and place three files identified via a uuid
@@ -92,3 +108,7 @@ state["nparr"]
 
     array([0., 0., 0., 0., 0., 0., 0., 0., 0., 0.])
 ```
+
+If you desire to save other data structures to file, perhaps pickling a machine learning model or something custom, then a new handler plugin should be written following the style of the plugins in the `dataice.plugins` module.
+
+Consider contributing your plugin to the pool of plugins currently available.
