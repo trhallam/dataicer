@@ -23,11 +23,11 @@
 Ice (save) your data and high level objects for use later.
 
 Do you have complex classes or objects that you want to save to disk and reinstate
-later? Do you want to use a data structures natural save methods? Do you want it
+later? Do you want to use a data structure's natural save methods? Do you want it
 to be easy and manageable, capturing key information so you can come back and load
 your data again later if you need to?
 
-`dataicer` can help you with all this. Build on top of `jsonpickle`, `dataicer`
+`dataicer` can help you with all this. Built on top of `jsonpickle`, `dataicer`
 allows you to create a central handler (just for a directory at the moment) where
 Python objects can be saved in `json` format. However, while `json` format might
 be ok for small objects or simple types it is not great for `numpy.ndarray` or
@@ -54,7 +54,7 @@ pip install digirock
 First, create a new `DirectoryHandler` class. This points at the archive folder
 you want to use.
 
-If you have speical classes you need to pickle they need a special handler. Dataicer includes handlers for `numpy.ndarray`, `xarray.Dataarray` and `xarray.Dataset` and `pandas.DataFrame`. Handlers are unique to the `DirectoryHandler` instance.
+If you have special classes you need to pickle they need a special handler. Dataicer includes handlers for `numpy.ndarray`, `xarray.Dataarray` and `xarray.Dataset` and `pandas.DataFrame`. Handlers are unique to the `DirectoryHandler` instance.
 
 ```
 from dataicer import DirectoryHandler, get_numpy_handlers, get_pandas_handlers, get_xarray_handlers
